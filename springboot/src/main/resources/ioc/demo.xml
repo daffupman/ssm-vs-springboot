@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="student" class="io.daff.springboot.ioc.xml.Student">
+<!--        <constructor-arg index="0" value="default-name"/>-->
+<!--        <constructor-arg index="1" value="0"/>-->
+        <constructor-arg name="name" value="default-name"/>
+        <constructor-arg name="age" value="0"/>
+        <property name="name" value="daffupman"/>
+        <property name="age" value="17"/>
+        <property name="classList">
+            <list>
+                <value>algorithm</value>
+                <value>computer network</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean name="animalFactoryBean" class="io.daff.springboot.ioc.xml.AnimalFactory"/>
+
+<!--    <bean id="helloService" class="io.daff.springboot.ioc.xml.HelloService">-->
+<!--        <property name="student" ref="student"/>-->
+<!--        <property name="animal" ref="dog"/>-->
+<!--    </bean>-->
+
+    <bean id="dog" factory-bean="animalFactoryBean" factory-method="getAnimal">
+        <constructor-arg value="dog"/>
+    </bean>
+    <bean id="cat" factory-bean="animalFactoryBean" factory-method="getAnimal">
+        <constructor-arg value="cat"/>
+    </bean>
+
+</beans>

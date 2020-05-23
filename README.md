@@ -141,3 +141,72 @@ SpringBoot中的监听器：
 4. 监听事件的触发机制？
 5. 如果自定义实现系统监听器，注意事项？
 6. 实现ApplicationListener和SmartApplicationListener的区别？
+
+## Bean解析
+
+### IOC思想
+
+把对象的创建权转交给Spring框架。
+
+### Bean的配置方式
+
+#### xml
+
+- 无参
+- 有参
+- 静态工厂
+- 工厂方法
+
+#### 注解
+
+- @Component/@Repository/@Service/@Controller
+- 配置类中的@Bean 与 @Configuration
+- 实现FactoryBean
+- 实现BeanDefinitionRegistryPostProcessor
+- 实现ImportBeanDefinitionRegistrar
+
+### refresh方法
+
+refresh方法是bean配置读取加载入口。具体流程如下：
+
+![](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200523154800.png)
+
+- `prepareRefresh`: 清除scanner（元数据工厂）缓存；设置容器状态；初始化属性设置；检查容器的必备属性是否存在。
+    > 容器的必备属性可以通过ConfigurationEnvironment#setRequiredProperties方法来设置，此时需要在项目的配置文件中配置这个必须的属性，否则在项目启动时报错。
+- `obtainFreshBeanFactory`: 设置BeanFactory的序列化id；获取BeanFactory；
+- `prepareBeanFactory`: 设置BeanFactory一些属性；添加后置处理器；设置忽略的自动装配接口；注册一些组件；
+- `postProcessorBeanFactory`：子类会重写该方法，以在BeanFactory完成创建后做进一步设置；
+    > 如在Web环境中：添加BeanPostProcessor，忽略装配接口，注册web应用的作用域和环境配置信息。
+- `invokeBeanFactoryPostProcessors`：
+    - 遍历 `BeanFactoryPostProcessors集合` ，如果集合中的BeanFactoryPostProcessor实现了BeanDefinitionRegistryPostProcessor，那么调用它的 `postProcessorBeanDefinitionRegistry` 方法，同时添加到registryProcessor集合中；否则直接添加到regularPostProcessor中。
+    - 遍历 `BeanFactory` 中 `BeanDefinitionRegistryPostProcessor`实现，如果它实现了 `PriorityOrdered` 接口，就把它添加到currentRegistryProcessors集合中，再添加到processedBeans集合中。然后对集合currentRegistryProcessors排序，将上述结果添加到registryProcessors集合中。currentRegistryProcessors集合内遍历调用postProcessorBeanDefinitionRegistry方法，清空集合currentRegistryProcessors。
+    - 遍历 `BeanFactory` 中 `BeanDefinitionRegistryPostProcessor`实现，如果处理过且实现了 `Ordered` 接口，就把它添加到currentRegistryProcessors集合中，再添加到processedBeans集合中。然后对集合currentRegistryProcessors排序，将上述结果添加到registryProcessors集合中。currentRegistryProcessors集合内遍历调用postProcessorBeanDefinitionRegistry方法，清空集合currentRegistryProcessors。
+    - 循环上一步，直到BeanFactory中不存在未处理的BeanDefinitionRegistryPostProcessor实现，registryProcessors集合内对象依次调用postProcessorBeanFactory方法，regularPostProcessors集合内对象依次调用postProcessBeanFactory方法。
+    
+    该方法主要作用是：1）调用BeanDefinitionRegistryPostProcessor实现向容器内添加bean定义；2）调用BeanFactoryPostProcessor实现向容器内bean的定义添加属性；
+- `registerBeanPostProcessors`：
+    - 找到BeanPostProcessor实现
+    - 排序后注册进容器内
+- `initMessageSource`：初始化国际化相关属性
+- `initApplicationEventMulticaster`：初始化事件广播器
+- `onRefresh`：创建Web容器；
+- `registerListeners`：
+    - 添加容器内事件监听器至事件广播器中；
+    - 派发早期事件；
+- `finishBeanFactoryInitialization`：初始化剩下的单实例Bean；
+- `finishRefresh`：
+    - 初始化生命周期处理器；
+    - 调用生命周期处理器的onRefresh方法；
+    - 发布ContextRefreshedEvent事件；
+    - JMX相关处理；
+    
+### bean实例化解析
+
+getBean -> doGetBean -> getSingleton -> CreateBean -> resolveBeforeInstantiation -> doCreateBean -> createBeanInstance -> instantiateBean -> instantiate -> populateBean -> initializeBean
+
+### 小节
+
+1. ioc思想？
+2. springboot中bean的配置方式？
+3. refresh方法的流程？
+4. bean实例化流程？
