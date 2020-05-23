@@ -210,3 +210,33 @@ getBean -> doGetBean -> getSingleton -> CreateBean -> resolveBeforeInstantiation
 2. springboot中bean的配置方式？
 3. refresh方法的流程？
 4. bean实例化流程？
+
+## SpringBoot banner解析
+
+### banner设置
+
+在resource目录下新建banner.txt，将图案或文字放入banner.txt文件中；可以指定banner.txt为自定义的文件名，然后在配置文件中配置（key为spring.banner.location/spring.banner.image.location）。可以在txt文本中使用${}。spring.banner.charset指定字符集。
+- 文字：banner.txt
+- 图案：banner.jpg|png|gif
+
+通过SpringApplication#setBanner设置兜底banner。
+> spring.main.banner-mode=off # 禁用banner
+> 可以通过设置spring.banner.* 来设置更多的属性
+
+### banner设置原理
+
+`Banner printedBanner = printBanner(environment);`
+
+输出banner逻辑：
+- 获取banner：
+- 打印banner：getImageBanner/getTextBanner
+
+![](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200523233857.png)
+
+## 小节
+
+1. banner的配置方式？
+2. banner的打印流程？
+3. 获取banner的原理？
+4. 输出banner的原理？
+5. banner的一些常见属性？
