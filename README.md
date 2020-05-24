@@ -233,10 +233,45 @@ getBean -> doGetBean -> getSingleton -> CreateBean -> resolveBeforeInstantiation
 
 ![](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200523233857.png)
 
-## 小节
+### 小节
 
 1. banner的配置方式？
 2. banner的打印流程？
 3. 获取banner的原理？
 4. 输出banner的原理？
 5. banner的一些常见属性？
+
+## 启动加载器解析
+
+### 计时器
+
+`StopWatch` 用来统计任务耗时。
+
+### 案例
+
+- 方式一：
+    - 实现CommandLineRunner接口
+    - 重写run方法
+- 方式二：
+    - 实现ApplicationRunner接口
+    - 重写run方法
+    - 通过@Order排序
+> 排序规则：order值可以指定顺序，order值相同ApplicationRunner实现优先。
+
+### 原理
+
+callRunner实现：
+- 添加ApplicationRunner实现至Runners集合；
+- 添加CommandLineRunner实现至Runners集合；
+- 对Runners集合排序；
+- 遍历Runners集合调用实现类的run方法；
+
+同Order值下，ApplicationRunner实现优先于CommandLineRunner；两者的入参也不一致。
+
+### 小节
+
+1. 如何设计一个计时器？
+2. 怎么实现在SpringBoot启动后执行程序？
+3. 启动加载器如何实现？
+4. 启动加载器实现的异同？
+5. 启动加载器的调用时机？

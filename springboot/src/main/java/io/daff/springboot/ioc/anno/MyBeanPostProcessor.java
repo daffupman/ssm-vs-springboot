@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
  * @author daffupman
  * @since 2020/5/23
  */
-@Component
+// @Component
 public class MyBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
 
     @Override

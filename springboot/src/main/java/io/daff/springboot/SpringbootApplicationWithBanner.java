@@ -6,8 +6,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
 
-@SpringBootApplication
-@MapperScan("io.daff.springboot.mapper")
+// @SpringBootApplication
+// @MapperScan("io.daff.springboot.mapper")
 public class SpringbootApplicationWithBanner {
 
     public static void main(String[] args) {
