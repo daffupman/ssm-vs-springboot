@@ -275,3 +275,130 @@ callRunner实现：
 3. 启动加载器如何实现？
 4. 启动加载器实现的异同？
 5. 启动加载器的调用时机？
+
+## 属性配置解析
+
+### 属性配置
+
+Spring提供属性配置的17种方式（有顺序）：
+- Devtools全局配置
+- 测试环境@TestPropertySource注解
+- 测试环境properties属性
+- 命令行参数
+- SPRING_APPLICATION_JSON属性：在启动时，指定Program arguments,值为json字符串
+- ServletConfig初始化参数
+- ServletContext初始化参数
+- JNDI属性
+- Java系统属性
+- 操作系统环境变量
+- RandomValuePropertySource随机值属性
+- jar包外的application-{profile}.properties
+- jar包内的application-{profile}.properties
+- jar包外的application.properties
+- jar包内的application.properties
+- @PropertySource绑定配置：需要在resource目录下新建properties文件，填写kv属性对。在启动类上加上@PropertySource注解并指定属性文件。
+- 默认属性
+
+### Spring Aware
+
+Spring中的Bean本身是感受不到容器的存在的,但是可以通过Aware接口感知到Spring容器。
+
+常用的Aware：
+- BeanNameAware：获取容器中bean名称
+- BeanClassLoaderAware：获取类加载器
+- BeanFactoryAware：获取的beanFactory
+- EnvironmentAware：获取环境变量
+- EmbeddedValueResolverAware：获取spring容器加载的properties文件属性值
+- ResourceLoaderAware：获取资源加载器
+- ApplicationEventPublisherAware：获取应用事件发布器
+- MessageSourceAware：获取文本信息
+- ApplicationContextAware：获取当前应用上下文
+
+原理：
+
+![](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200524140219.png)
+
+自定义Aware：
+
+![](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200524140339.png)
+
+### Environment
+
+获取属性的过程：
+- AbstractEnvironment#getProperty
+- PropertySourcesPropertyResolver#getProperty
+- 遍历propertySources集合获取属性
+
+Environment对象填充propertySource集合的过程：
+- ConfigurableEnvironment#prepareEnvironment
+    - getOrCreateEnvironment：根据当前环境返回相应的Environment对象。调用子类的customizePropertySource方法：
+        - 添加servletConfigInitParams属性集
+        - 添加servletContextInitParams属性集
+        - 添加Jndi属性集
+        - 添加systemProperties属性集
+        - 添加systemEnvironment属性集
+- configEnvironment：调用configPropertySource方法
+    - 添加defaultProperties属性集
+    - 添加commandLineArgs属性集
+- listeners#environmentPrepared
+    - 添加SPRING_APPLICATION_JSON属性集
+    - 如果当前环境是springcloud，添加vcap属性集
+    - 添加random属性集
+    - 添加application-profile.(properties|yml)属性集
+- ConfigurationPropertySource#attach
+    - 添加configurationProperties属性集
+- ConfigurationClassParser：@PropertySource注解的解析器
+    - 将@PropertySource配置的属性文件中的所有属性加载进来
+
+### Spring Profile
+
+将不同的配置参数绑定在不同的环境中。默认使用application.properties文件，该文件默认激活application-default.properties。
+- 可以使用启动参数 `spring.profiles.default=...` 来切换环境。
+- 可以使用启动参数 `spring.profiles.active=...` 来集合profile文件
+- 使用 `spring.profiles.include` 可以引入多个属性文件
+- spring.profiles.active与default互拆
+- 使用 `spring.config.name=..` 可以将profile前缀修改为自定义的（默认为application）
+
+原理：
+- 处理入口：
+    - ConfigFileApplicationListener#onApplicationEvent
+    - postProcessEnvironment
+    - addPropertySource
+    - Loader#load
+    
+- initializeProfiles逻辑
+
+![](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200524195414.png)
+
+profile处理逻辑：
+- 遍历getSearchLocations:
+    - 读取spring.config.location
+    - spring.config.additional-location
+    - classpath:/ , classpath:/config/, file:./ , file:./config/
+- 遍历getSearchNames：
+    - 检查是否指定spring.config.name
+    - 默认为application
+- 遍历propertySourceLoaders：
+    - propertiesPropertySourceLoader：properties或xml文件的属性
+    - yamlPropertySourceLoader：yml|yaml文件的属性
+- loadForFileExtension
+- load
+    - 尝试读取application-profile.xx文件；
+    - 如果资源存在，则loadDocuments读取文件属性；
+    - 将文件内激活的profile添加到profiles集合中；
+    - 将文件内定义的属性放入loaded集合中
+- addLoadedPropertySources
+    - 获取Environment的propertySource集合对象destination
+    - 遍历loaded集合
+    - 依次将集合内属性集添加到destination中
+    
+### 小节
+
+1. SpringBoot属性配置的方式？
+2. Spring Aware的作用和常见的有哪些？
+3. Spring Aware注入原理？
+4. 动手写一个Spring Aware？
+5. Environment对象是如何加载属性集的？
+6. Spring profile是什么，常用配置方式？
+7. Spring profile配置方式有哪些注意事项？
+8. Spring profile处理逻辑？
