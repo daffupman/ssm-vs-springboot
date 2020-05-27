@@ -1,2 +1,3 @@
 org.springframework.context.ApplicationContextInitializer=io.daff.springboot.initializer.FirstInitializer
 org.springframework.context.ApplicationListener=io.daff.springboot.listener.FirstListener
+org.springframework.boot.SpringBootExceptionReporter=io.daff.springboot.exception.MyExceptionReporter

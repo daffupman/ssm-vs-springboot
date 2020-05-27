@@ -402,3 +402,56 @@ profile处理逻辑：
 6. Spring profile是什么，常用配置方式？
 7. Spring profile配置方式有哪些注意事项？
 8. Spring profile处理逻辑？
+
+## 异常报告解析
+
+### 异常报告类介绍
+
+异常报告接口：
+```java
+public interface SpringBootExceptionReporter {
+
+    /**
+     * Report a startup failure to the user
+     */
+    boolean reportException(Throwable failure);
+}
+```
+
+框架内的实现：
+- 在SpringApplication#run方法内，先构建 `Collection<SpringBootExceptionReporter>`；
+- 通过 `getSpringFactoriesInstances` 方法获取在 `spring.factories` 文件中的SpringBootException接口的实现，填充到集合中；
+
+reportException实现：
+- analyze方法中遍历analyzers集合找到能处理该异常的对象；
+- report方法中调用FailureAnalysisReporter实现类报告异常；
+
+analyze逻辑：
+- 调用 `getCauseType` 方法获取子类感兴趣的异常类型；
+- 调用 `findCause` 方法判断抛出的异常栈是否包含子类感兴趣异常，对于感兴趣的异常会调用子类具体analyze实现给出异常分析结果类；
+
+FailureAnalysisReporter:
+
+报告异常给到用户，具体实现类为LoggingFailureAnalysisReporter,可以根据失败分析结果类构建错误信息输出；
+
+### SpringBoot异常处理流程
+
+- 异常处理入口：handleRunFailure:
+    - handleExitCode：exitCode为退出状态码，0代表正常退出，否则异常退出。不为0的时候会发布ExitCodeEvent事件，记录exitCode；
+    - listeners.failed：发布ApplicationFailedEvent事件；
+    - reportFailure：遍历exceptionReports集合，调用SpringBootExceptionReporter实现类的reportException方法。成功处理的话记录已处理异常；
+    - context.close：更改应用上下文状态；销毁所有的单例bean，将beanFactory置为空；如果是web环境，需要关闭web容器，移除shutdownHook；
+    - ReflectionUtils.rethrownRuntimeException：重新抛出异常。
+
+shutdownHook：jvm退出时执行的业务逻辑：
+- 添加：Runtime.getRuntime().addShutdownHook()
+- 移除：Runtime.getRuntime().removeShutdownHook()
+
+### 小节
+
+1. 关闭钩子方法的作用和使用？
+2. SpringBoot异常报告类结构？
+3. Spring异常报告器的实现原理？
+4. SpringBoot异常处理流程？
+5. SpringBoot异常处理流程中的注意事项？
+6. 自定义实现SpringBoot异常报告器？    
