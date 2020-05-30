@@ -94,3 +94,36 @@
     - 健康检查：Health、HealthIndicator
     - 指标：内建Metrics、自定义Metrics
     
+## 自动装配
+
+### Spring Framework的手动装配
+
+一种用于声明在应用中扮演组件角色的注解，如@Component、@Service、@Configuration等，可通过`<context:component-scan>`或@ComponentScan来装配。这些注解时可派生和具有层次性的。
+
+@Enable模块装配：具备相同领域的功能组件集合，组合形成一个独立的单元，如@EnableWebMvc、@EnableAutoConfiguration等。可通过注解和编程两种方式来实现。
+
+- Spring Framework
+    - @EnableWebMvc：激活Web Mvc模块；
+    - @EnableTransactionManagement：事务管理模块；
+    - @EnableCaching：Caching模块；
+    - @EnableMBeanExport：JMX模块；
+    - @EnableAsync：异步处理模块；
+    - @EnableWebFlux：Web Flux模块；
+    - @EnableAspectJAutoProxy：AspectJ代理模块；
+- Spring Boot
+    - @EnableAutoConfiguration：自动装配模块
+    - @EnableManagementContext：Actuator管理模块
+    - @EnableConfigurationProperties：配置属性绑定模块
+    - @EnableOAuth2Sso：OAuth2单点登录模块
+- Spring Cloud
+    - @EnableEureka：Eureka服务模块
+    - @EnableConfigServer：配置服务模块
+    - @EnableFeignClients：Feign客户端模块
+    - @EnableZuulProxy：服务网关Zuul模块
+    - @EnableCircuitBreaker：服务熔断模块
+    
+Spring条件装配：Bean装配前的前置判断，配置化条件装配@Profile、编程条件装配@Conditional
+
+### Spring Boot自动装配
+
+### 小节
