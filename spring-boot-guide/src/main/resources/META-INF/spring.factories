@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  io.daff.springbootguide.configuration.HelloWorldAutoConfiguration
+
+org.springframework.boot.SpringApplicationRunListener=\
+  io.daff.springbootguide.run.HelloWorldRunListener

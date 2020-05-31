@@ -126,4 +126,64 @@ Spring条件装配：Bean装配前的前置判断，配置化条件装配@Profil
 
 ### Spring Boot自动装配
 
-### 小节
+基于约定大于配置的原则，实现Spring组件自动装配。可以通过以下方式来自动装配：
+- 模式注解
+- @Enable模块
+- 条件装配
+- 工厂加载机制
+
+实现步骤：
+- 激活自动装配：@EnableAutoConfiguration
+- 实现自动装配：XxxAUtoConfiguration
+- 配置自动装配实现：META-INF/spring.factories
+
+## 理解SpringApplication
+
+### SpringApplication准备阶段
+
+#### 基础技术
+
+Spring Framework：
+- Spring模式注解
+- Spring应用上下文
+- Spring工厂加载机制
+- Spring应用上下文初始器
+- Spring Environment抽象
+- Spring应用事件/监听器
+
+Spring Boot：
+- SpringApplication
+- SpringApplication Builder API
+- SpringApplication运行监听器
+- SpringApplication参数
+- SpringApplication故障分析
+- SpringApplication应用事件/监听器
+
+SpringApplication：Spring应用引导类，提供便利的自定义行为方法。可运用在嵌入式Web应用和非Web应用。
+
+- 配置Spring Bean的来源（xml和配置类）
+- Web应用类型和主引导类
+- 加载应用上下文初始化器和应用事件监听器
+
+### SpringApplication运行阶段
+
+- 加载SpringApplication运行监听器
+    - 启动成功：创建应用上下文初始化器、Environment等
+        - 根据准备阶段的推断Web应用类型创建对应的Configurable。
+            - Web Reactive：AnnotationCOnfigReactiveWebServerApplicationContext
+            - Web Servlet：AnnotationConfigServletWebServerApplicationContext
+            - 非Web：AnnotationConfigApplicationContext
+        - 根据准备阶段的推断Web应用类型创建对应的ConfigurableEnvironment实例
+            - Web Reactive/非Web：StandardEnvironment
+            - Web Servlet：StandardServletEnvironment
+    - 启动失败：故障分析报告
+    - 回调CommandLineRunner、ApplicationRunner
+- 运行SpringApplication运行监听器：利用Spring工厂加载机制，读取SpringApplicationRunListener对象集合，并且封装到组合类SpringApplicationRunListeners。SpringApplicationRunListeners监听多个运行状态方法：
+    - starting()：Spring应用刚启动
+    - environmentPrepared(ConfigurableEnvironment)：ConfigurableEnvironment准备妥当，允许将其调整
+    - contextPrepared(ConfigurableApplicationContext)：ConfigurableApplicationContext，允许将其调整
+    - contextLoaded(ConfigurableApplicationContext)：ConfigurableApplicationContext已装载，但仍未启动
+    - started(ConfigurableApplicationContext)：ConfigurableApplicationContext已启动，此时Spring Bean已初始化完成
+    - running(ConfigurableApplicationContext)：Spring应用正在运行
+    - failed(ConfigurableApplicationContext, Throwable)：Spring应用运行失败
+- 监听SpringBoot事件、Spring事件：Spring Boot通过SpringApplicationRunListener的实现类EventPublishingRunListener利用Spring Framework事件API，广播Spring Boot事件。

@@ -1,0 +1,8 @@
+io\daff\entity\UserExample$GeneratedCriteria.class
+io\daff\entity\User.class
+io\daff\controller\UserController.class
+io\daff\entity\UserExample.class
+io\daff\entity\UserExample$Criterion.class
+io\daff\mapper\UserMapper.class
+io\daff\service\UserService.class
+io\daff\entity\UserExample$Criteria.class
