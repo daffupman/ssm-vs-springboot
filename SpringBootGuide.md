@@ -333,3 +333,97 @@ SpringApplication：Spring应用引导类，提供便利的自定义行为方法
     Web MVC配置：WebMvcProperties
     
     资源配置：ResourceProperties
+    
+## Web MVC视图应用
+
+### 模板引擎
+
+thymeleaf是新一代服务端的、html友好的模板引擎，也是Spring官方推荐的模板引擎。但是thymeleaf的性能并不理想，可以将thymeleaf与jsp混合使用。
+
+thymeleaf依赖：
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+```
+
+核心要素：
+- 资源定位：模板来源
+    - 通用资源抽象：文件资源（File）、ClassPath资源（ClassLoader）、统一资源（URL）、Web资源（ServletContext）
+    - Spring资源：Resource
+- 渲染上下文：变量来源
+    - thymeleaf上下文（Context）、Spring Web MVC模型（Model）、Servlet上下文（Attribute）
+- 模板引擎：模板渲染
+    - `ITemplateEngine`实现：
+        - TemplateEngine：thymeleaf原生实现
+        - SpringTemplateEngine：Spring实现
+        - SpringWebFluxTemplateEngine：Spring WebFlux实现
+
+### 视图处理
+
+Spring Web MVC视图组件
+    - 视图解析器：ViewResolver
+    - 视图：View
+    - 总控：DispatcherServlet
+
+Thymeleaf整合Spring Web MVC
+- 视图解析器：ThymeleafViewResolver
+- 视图：ThymeleafView
+- 渲染：SpringTemplateEngine
+
+![视图解析器运行原理](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200607103149.png)
+
+多视图解析器并存
+- 视图解析器：
+    - ThymeleafViewResolver
+    - InternalResourceViewResolver
+- 目的：
+    - 理解ViewResolver Order
+    - 理解ViewResolver 模板资源查找
+    - 自定义ViewResolver Order
+
+### 视图内容协商
+
+Web根据不同的请求策略，实现服务端响应对应视图内容输出。这些策略实现包括：
+
+- Accept请求头：Accept:text/*，HeaderContentNegotiationStrategy
+- 请求query参数：/path?format=pdf，ParameterContentNegotiationStrategy
+- 路径拓展名：/abc.pdf,PathExtensionContentNegotiationStrategy
+- 固定MediaType：FixedContentNegotiationStrategy
+
+内容协商的核心组件：
+
+- 视图解析器：ContentNegotiatingViewResolver
+
+    - 关联ViewResolver Bean列表
+    
+        - InternalResourceViewResolver
+        - BeanNameViewResolver
+        - ThymeleafViewResolver
+    
+    - 关联ContentNegotiationManager Bean
+    - 解析最佳匹配View
+
+- 内容协商管理器：ContentNegotiatingManager
+
+    - 由ContentNegotiatingConfigurer配置
+    - 由ContentNegotiatingManagerFactoryBean创建
+    - 关联ContentNegotiationStrategy集合
+
+- 内容协商策略：ContentNegotiatingStrategy
+
+![内容协商时序图](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200607161206.png)
+
+### 视图组件的自动装配
+
+自动装配：
+
+- Web MVC：WebMvcAutoConfiguration
+- Thymeleaf Web MVC：ThymeleafWebMvcConfiguration
+- Thymeleaf Web Flux：ThymeleafWebFluxConfiguration
+
+外部化配置：
+
+- 内容协商：WebMvcProperties.ContentNegotiation
+- Thymeleaf：ThymeleafProperties
