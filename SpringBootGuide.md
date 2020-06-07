@@ -187,3 +187,149 @@ SpringApplication：Spring应用引导类，提供便利的自定义行为方法
     - running(ConfigurableApplicationContext)：Spring应用正在运行
     - failed(ConfigurableApplicationContext, Throwable)：Spring应用运行失败
 - 监听SpringBoot事件、Spring事件：Spring Boot通过SpringApplicationRunListener的实现类EventPublishingRunListener利用Spring Framework事件API，广播Spring Boot事件。
+
+## Web MVC核心
+
+### Spring MVC的架构
+- Servlet的基础架构
+
+    ![Servlet的基础架构](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200606192916.png)
+
+    Servlet特点：
+    - 请求/响应式（Request/Response）
+    - 屏蔽网络通信的细节
+    - 完整的生命周期
+    Servlet的职责：
+    - 处理请求：对请求进行处理，并返回响应。主要接受请求中的请求头（header）和请求体（body）中的数据来做处理；
+    - 资源管理：Servlet在装配时，可能需要连接jdbc数据库，加载缓存或redis等；
+    - 视图渲染：以html或json响应出去。
+
+- Spring Web MVC架构
+
+    FrontController前端控制器
+    
+    ![前端控制器架构](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200606194007.png)
+
+    客户端发送请求给前端控制器，前端控制器将请求派发给ApplicationController。ApplicationController会调用相应的服务来处理，此时会产生数据。可以把这些数据和视图结合，响应回去。
+
+### Spring MVC的认识和简化
+
+- SpringFramework时代的认识
+
+    使用的步骤：
+    
+    - 需要实现Controller
+        ```java
+        @Controller
+        public class HelloController {
+          
+            @RequestMapping
+            public String index(Model model) {
+              return "index";
+            }   
+        }
+        ```
+    - 配置Web MVC组件
+        ```xml
+        <!-- 指定组件扫描的包 -->
+        <context:component-scan base-package="com.io.daff"/>
+        
+        <!-- 配置RequestMappingHandlerMapping -->
+        <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
+        
+        <!-- 配置RequestMappingHandlerAdapter -->  
+        <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"/>
+      
+        <!-- 配置视图解析器 -->  
+        <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+            <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+            <property name="prefix" value="/WEB-INF/views"/>
+            <property name="suffix" value=".jsp"/>
+        </bean>
+        ```
+    - 部署DispatcherServlet
+    
+        在web.xml文件中配置servlet：
+        ```xml
+        <servlet>
+            <servlet-name>app</servlet-name>
+            <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+            <init-param>
+                <param-name>contextConfigLocation</param-name>
+                <param-value>/WEB-INF/application-context.xml</param-value>
+            </init-param>
+            <load-on-startup>1</load-on-startup>
+        </servlet>
+        <servlet-mapping>
+            <servlet-name>app</servlet-name>
+            <url-pattern>/</url-pattern>
+        </servlet-mapping>
+        ```
+    
+    Web MVC核心组件：
+    
+    处理器管理（Handler）；映射HandlerMapping，适配HandlerAdapter；执行HandlerExecutionChain；
+    
+    页面渲染：视图解析（ViewResolver），国际化（LocaleResolver，LocaleContextResolver），个性化（ThemeResolver）
+    
+    异常处理：异常解析（HandlerExceptionResolver）
+    
+    ![交互流程](https://raw.githubusercontent.com/daffupman/markdown-img/master/20200606211113.png)
+    
+    Web MVC注解驱动：
+    
+    注解配置：@Configuration（Spring范式注解）
+    
+    组件激活：@EnableWebMvc（Spring模块装配），自动导入DelegatingWebMvcConfiguration
+    
+    自定义组件：WebMvcConfigurer（Spring Bean）
+    
+    模型属性：@ModelAttribute
+    
+    请求头：@RequestHeader
+    
+    Cookie：@CookieValue
+    
+    检验参数：@Valid、@Validated
+    
+    注解处理：@ExceptionHandler
+    
+    切面通知：@ControllerAdvice执行通用的逻辑
+    
+    Web MVC自动装配：
+    
+    需要 Servlet3.0+ 的依赖；
+    
+    Servlet SPI（ServletContainerInitializer）：在容器启动的时候会回调SPI
+    
+    Spring 适配：SpringServletContainerInitializer
+    
+    Spring SPI（WebApplicationInitializer）
+    
+    编程驱动：AbstractDispatcherServletInitializer
+    
+    注解驱动：AbstractAnnotationConfigDispatcherServletInitializer
+    
+- Spring Boot时代的简化
+
+    完全自动装配：DispatcherServletAutoConfiguration     
+    
+    替换@EnableWebMvc：WebMvcAutoConfiguration
+    
+    Servlet容器：ServletWebServerFactoryAutoConfiguration
+    
+    自动装配的顺序：绝对顺序@AutoConfigureOrder，相对顺序@AutoConfigureAfter
+    
+    装配条件：
+    
+    Web类型判断（@ConditionalOnWebApplication）：Servlet类型为WebApplicationType.SERVLET
+    
+    API依赖（@ConditionalOnClass）：Servlet（Servlet）、Spring Web MVC（DispatcherServlet、WebMvcConfigurer）
+    
+    Bean判断（@ConditionalOnMissingBean、@ConditionalOnBean）：WebMvcConfigurationSupport
+    
+    外部化配置：
+    
+    Web MVC配置：WebMvcProperties
+    
+    资源配置：ResourceProperties
